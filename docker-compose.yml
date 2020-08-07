@@ -10,3 +10,4 @@ services:
     env_file:
         - ./domains.env
         - ./env.env
+    restart: always
