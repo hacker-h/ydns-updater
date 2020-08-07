@@ -25,11 +25,11 @@ while [ true ]
 do
     for domain in ${domains}
     do
-        if [ -n ${ENABLE_IPV4} ]
+        if [ -n "${ENABLE_IPV4}" ]
         then
             update_domain ${domain} 4
         fi
-        if [ -n ${ENABLE_IPV6} ]
+        if [ -n "${ENABLE_IPV6}" ]
         then
             update_domain ${domain} 6
         fi
