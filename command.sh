@@ -21,6 +21,18 @@ function update_domain {
 
 domains=$(env | grep ^DOMAIN | cut -d '=' -f2)
 
+if [ -z "${domains}" ]
+then
+    echo "No domains set. Example: DOMAIN1=mine.example.org"
+    exit 1
+fi
+
+if [ -z "${ENABLE_IPV4}" ] && [ -z "${ENABLE_IPV6}" ]
+then
+    echo "No IP version enabled, set at least one: ENABLE_IPV4, ENABLE_IPV6"
+    exit 1
+fi
+
 while [ true ]
 do
     for domain in ${domains}
