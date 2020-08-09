@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function update_domain {
   if [ -z ${1+x} ]
@@ -46,5 +46,5 @@ do
             update_domain ${domain} 6
         fi
     done
-    sleep "${UPDATE_DELAY}"
+    sleep ${UPDATE_DELAY}
 done
