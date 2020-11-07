@@ -119,13 +119,11 @@ jobs:
         --local dockerfile=. \
         --local context=.
 
-      - docker build -f Dockerfile.amd64 -t hackerh/ydns-updater:arm32v6-"${TRAVIS_TAG}" .
-      - docker build -f Dockerfile.arm32v6 -t hackerh/ydns-updater:amd64-"${TRAVIS_TAG}" .
-      - docker tag hackerh/ydns-updater:arm32v6-"${TRAVIS_TAG}" hackerh/ydns-updater:"${TRAVIS_TAG}"
+      - docker build -f Dockerfile.arm32v6 -t hackerh/ydns-updater:arm32v6-"${TRAVIS_TAG}" .
+      - docker build -f Dockerfile.amd64 -t hackerh/ydns-updater:amd64-"${TRAVIS_TAG}" .
       - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
       - docker push hackerh/ydns-updater:amd64-"${TRAVIS_TAG}"
       - docker push hackerh/ydns-updater:arm32v6-"${TRAVIS_TAG}"
-      - docker push hackerh/ydns-updater:"${TRAVIS_TAG}"
 
       - export DOCKER_CLI_EXPERIMENTAL=enabled
       - |
@@ -133,5 +131,5 @@ jobs:
         hackerh/ydns-updater:"${TRAVIS_TAG}"-amd64 \
         hackerh/ydns-updater:"${TRAVIS_TAG}"-armv7
       - docker manifest annotate hackerh/ydns-updater:"${TRAVIS_TAG}" hackerh/ydns-updater:"${TRAVIS_TAG}"-amd64 --arch amd64
-      - docker manifest annotate hackerh/ydns-updater:"${TRAVIS_TAG}" hackerh/ydns-updater:"${TRAVIS_TAG}"-armv7 --arch arm --variant v7
+      - docker manifest annotate hackerh/ydns-updater:"${TRAVIS_TAG}" hackerh/ydns-updater:"${TRAVIS_TAG}"-arm32v6 --arch arm --variant v7
       - docker manifest push hackerh/ydns-updater:"${TRAVIS_TAG}"
