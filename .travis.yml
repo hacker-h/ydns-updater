@@ -37,14 +37,7 @@ jobs:
         --exporter-opt push=false \
         --local dockerfile=. \
         --local context=.
-      - export DOCKER_CLI_EXPERIMENTAL=enabled
-      - |
-        docker manifest create hackerh/ydns-updater:latest \
-        hackerh/ydns-updater:latest-amd64 \
-        hackerh/ydns-updater:latest-armv7
-      - docker manifest annotate hackerh/ydns-updater:latest hackerh/ydns-updater:latest-amd64 --arch amd64
-      - docker manifest annotate hackerh/ydns-updater:latest hackerh/ydns-updater:latest-armv7 --arch arm --variant v7
-      - docker manifest push hackerh/ydns-updater:latest
+
 
     - stage: build
       name: "push latest image"
@@ -76,6 +69,16 @@ jobs:
         --exporter-opt push=true \
         --local dockerfile=. \
         --local context=.
+
+
+      - docker build -f Dockerfile.amd64 -t hackerh/ydns-updater:arm32v6-latest .
+      - docker build -f Dockerfile.arm32v6 -t hackerh/ydns-updater:amd64-latest .
+      - docker tag hackerh/ydns-updater:arm32v6-latest hackerh/ydns-updater:latest
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+      - docker push hackerh/ydns-updater:amd64-latest
+      - docker push hackerh/ydns-updater:arm32v6-latest
+      - docker push hackerh/ydns-updater:latest
+
       - export DOCKER_CLI_EXPERIMENTAL=enabled
       - |
         docker manifest create hackerh/ydns-updater:latest \
