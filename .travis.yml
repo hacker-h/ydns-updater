@@ -1,0 +1,133 @@
+dist: xenial
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+jobs:
+  include:
+    - stage: build
+      name: "build image"
+      if: (tag IS blank)
+      sudo: required
+      services:
+        - docker
+      script:
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+      - docker run --privileged linuxkit/binfmt:v0.6
+      - docker run -d --privileged -p 1337:1337 --name buildkit moby/buildkit:latest --addr tcp://0.0.0.0:1337 --oci-worker-platform linux/amd64 --oci-worker-platform linux/arm/v7
+      - docker cp buildkit:/usr/bin/buildctl .
+      - export BUILDKIT_HOST=tcp://0.0.0.0:1337
+      - |
+        ./buildctl build --frontend dockerfile.v0 \
+        --frontend-opt platform=linux/arm/v7 \
+        --frontend-opt filename=./Dockerfile.armv7 \
+        --exporter image \
+        --exporter-opt name=docker.io/hackerh/ydns-updater:armv7-latest \
+        --exporter-opt push=false \
+        --local dockerfile=. \
+        --local context=.
+      - |
+        ./buildctl build --frontend dockerfile.v0 \
+        --frontend-opt platform=linux/amd64 \
+        --frontend-opt filename=./Dockerfile.amd64 \
+        --exporter image \
+        --exporter-opt name=docker.io/hackerh/ydns-updater:amd64-latest \
+        --exporter-opt push=false \
+        --local dockerfile=. \
+        --local context=.
+
+
+    - stage: build
+      name: "push latest image"
+      if: (branch = master AND NOT type = pull_request)
+      sudo: required
+      services:
+        - docker
+      script:
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+      - docker run --privileged linuxkit/binfmt:v0.6
+      - docker run -d --privileged -p 1337:1337 --name buildkit moby/buildkit:latest --addr tcp://0.0.0.0:1337 --oci-worker-platform linux/amd64 --oci-worker-platform linux/arm/v7
+      - docker cp buildkit:/usr/bin/buildctl .
+      - export BUILDKIT_HOST=tcp://0.0.0.0:1337
+      - |
+        ./buildctl build --frontend dockerfile.v0 \
+        --frontend-opt platform=linux/arm/v7 \
+        --frontend-opt filename=./Dockerfile.armv7 \
+        --exporter image \
+        --exporter-opt name=docker.io/hackerh/ydns-updater:armv7-latest \
+        --exporter-opt push=false \
+        --local dockerfile=. \
+        --local context=.
+      - |
+        ./buildctl build --frontend dockerfile.v0 \
+        --frontend-opt platform=linux/amd64 \
+        --frontend-opt filename=./Dockerfile.amd64 \
+        --exporter image \
+        --exporter-opt name=docker.io/hackerh/ydns-updater:amd64-latest \
+        --exporter-opt push=true \
+        --local dockerfile=. \
+        --local context=.
+
+
+      - docker build -f Dockerfile.amd64 -t hackerh/ydns-updater:armv7-latest .
+      - docker build -f Dockerfile.armv7 -t hackerh/ydns-updater:amd64-latest .
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+      - docker push hackerh/ydns-updater:amd64-latest
+      - docker push hackerh/ydns-updater:armv7-latest
+
+      - export DOCKER_CLI_EXPERIMENTAL=enabled
+      - |
+        docker manifest create hackerh/ydns-updater:latest \
+        hackerh/ydns-updater:amd64-latest \
+        hackerh/ydns-updater:armv7-latest
+      - docker manifest annotate hackerh/ydns-updater:latest hackerh/ydns-updater:amd64-latest --arch amd64
+      - docker manifest annotate hackerh/ydns-updater:latest hackerh/ydns-updater:armv7-latest --arch arm --variant v7
+      - docker manifest push hackerh/ydns-updater:latest
+
+    - stage: build
+      name: "push tagged image"
+      if: (tag IS present)
+      sudo: required
+      services:
+        - docker
+      script:
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+      - docker run --privileged linuxkit/binfmt:v0.6
+      - docker run -d --privileged -p 1337:1337 --name buildkit moby/buildkit:latest --addr tcp://0.0.0.0:1337 --oci-worker-platform linux/amd64 --oci-worker-platform linux/arm/v7
+      - docker cp buildkit:/usr/bin/buildctl .
+      - export BUILDKIT_HOST=tcp://0.0.0.0:1337
+      - |
+        ./buildctl build --frontend dockerfile.v0 \
+        --frontend-opt platform=linux/arm/v7 \
+        --frontend-opt filename=./Dockerfile.armv7 \
+        --exporter image \
+        --exporter-opt name=docker.io/hackerh/ydns-updater:armv7-"${TRAVIS_TAG}" \
+        --exporter-opt push=false \
+        --local dockerfile=. \
+        --local context=.
+      - |
+        ./buildctl build --frontend dockerfile.v0 \
+        --frontend-opt platform=linux/amd64 \
+        --frontend-opt filename=./Dockerfile.amd64 \
+        --exporter image \
+        --exporter-opt name=docker.io/hackerh/ydns-updater:amd64-"${TRAVIS_TAG}" \
+        --exporter-opt push=true \
+        --local dockerfile=. \
+        --local context=.
+
+      - docker build -f Dockerfile.armv7 -t hackerh/ydns-updater:armv7-"${TRAVIS_TAG}" .
+      - docker build -f Dockerfile.amd64 -t hackerh/ydns-updater:amd64-"${TRAVIS_TAG}" .
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+      - docker push hackerh/ydns-updater:amd64-"${TRAVIS_TAG}"
+      - docker push hackerh/ydns-updater:armv7-"${TRAVIS_TAG}"
+
+      - export DOCKER_CLI_EXPERIMENTAL=enabled
+      - |
+        docker manifest create hackerh/ydns-updater:"${TRAVIS_TAG}" \
+        hackerh/ydns-updater:amd64-"${TRAVIS_TAG}" \
+        hackerh/ydns-updater:armv7-"${TRAVIS_TAG}"
+      - docker manifest annotate hackerh/ydns-updater:"${TRAVIS_TAG}" hackerh/ydns-updater:amd64-"${TRAVIS_TAG}" --arch amd64
+      - docker manifest annotate hackerh/ydns-updater:"${TRAVIS_TAG}" hackerh/ydns-updater:armv7-"${TRAVIS_TAG}" --arch arm --variant v7
+      - docker manifest push hackerh/ydns-updater:"${TRAVIS_TAG}"
