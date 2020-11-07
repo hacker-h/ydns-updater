@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-function update_domain {
+update_domain() {
   if [ -z ${1+x} ]
   then
     echo "No domain passed, nothing to do.."
@@ -23,7 +23,7 @@ domains=$(env | grep ^DOMAIN | cut -d '=' -f2)
 
 if [ -z "${domains}" ]
 then
-    echo "No domains set. Example: DOMAIN1=mine.example.org"
+    echo "No domains set. Example: DOMAIN1=mydomain.example.org"
     exit 1
 fi
 

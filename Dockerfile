@@ -5,5 +5,5 @@ ENV UPDATE_DELAY=30
 
 WORKDIR /app
 
-COPY ./command.sh /app/command.sh
-CMD bash /app/command.sh
+COPY ./update_ydns.sh /app/update_ydns.sh
+CMD bash /app/update_ydns.sh
