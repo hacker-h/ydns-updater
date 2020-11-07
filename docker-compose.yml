@@ -1,12 +1,15 @@
-version: "3.6"
+version: "3"
+
 services:
   ydns-updater:
     container_name: ydns_updater
     build: .
     environment:
-        - ENABLE_IPV4=True
-        # - ENABLE_IPV6=True
+        # - ENABLE_IPV4=True
+        - ENABLE_IPV6=True
         - UPDATE_DELAY=30
     env_file:
         - ./domains.env
-        - ./env.env
+        - ./ydns.env
+    restart: always
+    network_mode: host

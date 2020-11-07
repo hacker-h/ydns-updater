@@ -1,6 +1,6 @@
 #!/bin/sh
 
-function update_domain {
+update_domain() {
   if [ -z ${1+x} ]
   then
     echo "No domain passed, nothing to do.."
@@ -21,18 +21,30 @@ function update_domain {
 
 domains=$(env | grep ^DOMAIN | cut -d '=' -f2)
 
+if [ -z "${domains}" ]
+then
+    echo "No domains set. Example: DOMAIN1=mydomain.example.org"
+    exit 1
+fi
+
+if [ -z "${ENABLE_IPV4}" ] && [ -z "${ENABLE_IPV6}" ]
+then
+    echo "No IP version enabled, set at least one: ENABLE_IPV4, ENABLE_IPV6"
+    exit 1
+fi
+
 while [ true ]
 do
     for domain in ${domains}
     do
-        if [ -n ${ENABLE_IPV4} ]
+        if [ -n "${ENABLE_IPV4}" ]
         then
             update_domain ${domain} 4
         fi
-        if [ -n ${ENABLE_IPV6} ]
+        if [ -n "${ENABLE_IPV6}" ]
         then
             update_domain ${domain} 6
         fi
     done
-    sleep "${UPDATE_DELAY}"
+    sleep ${UPDATE_DELAY}
 done
