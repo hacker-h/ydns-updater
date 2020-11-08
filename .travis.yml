@@ -56,7 +56,7 @@ jobs:
         --frontend-opt filename=./Dockerfile.armv7 \
         --exporter image \
         --exporter-opt name=docker.io/hackerh/ydns-updater:armv7-latest \
-        --exporter-opt push=false \
+        --exporter-opt push=true \
         --local dockerfile=. \
         --local context=.
       - |
@@ -68,10 +68,6 @@ jobs:
         --exporter-opt push=true \
         --local dockerfile=. \
         --local context=.
-
-      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-      - docker push hackerh/ydns-updater:amd64-latest
-      - docker push hackerh/ydns-updater:armv7-latest
 
       - export DOCKER_CLI_EXPERIMENTAL=enabled
       - |
@@ -100,7 +96,7 @@ jobs:
         --frontend-opt filename=./Dockerfile.armv7 \
         --exporter image \
         --exporter-opt name=docker.io/hackerh/ydns-updater:armv7-"${TRAVIS_TAG}" \
-        --exporter-opt push=false \
+        --exporter-opt push=true \
         --local dockerfile=. \
         --local context=.
       - |
@@ -112,10 +108,6 @@ jobs:
         --exporter-opt push=true \
         --local dockerfile=. \
         --local context=.
-
-      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-      - docker push hackerh/ydns-updater:amd64-"${TRAVIS_TAG}"
-      - docker push hackerh/ydns-updater:armv7-"${TRAVIS_TAG}"
 
       - export DOCKER_CLI_EXPERIMENTAL=enabled
       - |
