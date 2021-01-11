@@ -3,7 +3,9 @@ version: "3"
 services:
   ydns-updater:
     container_name: ydns_updater
-    build: .
+    build:
+        context: .
+        dockerfile: Dockerfile.amd64
     environment:
         # - ENABLE_IPV4=True
         - ENABLE_IPV6=True
